@@ -1,0 +1,5 @@
+dnssecjava (1.1.3-1) unstable; urgency=medium
+
+  * Initial release (Closes: #845371)
+
+ -- Ingo Bauersachs <ingo@jitsi.org>  Sat, 03 Dec 2016 13:50:39 +0100

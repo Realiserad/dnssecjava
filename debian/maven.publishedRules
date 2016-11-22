@@ -1,0 +1,5 @@
+
+org.jitsi dnssecjava bundle * * *
+org.jitsi dnssecjava bundle s/.*/debian/ * *
+org.jitsi dnssecjava s/jar/bundle/ * * *
+org.jitsi dnssecjava s/jar/bundle/ s/.*/debian/ * *

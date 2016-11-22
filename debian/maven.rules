@@ -1,0 +1,5 @@
+
+joda-time joda-time jar s/.*/debian/ * *
+junit junit jar s/4\..*/4.x/ * *
+org.jitsi dnssecjava bundle * * *
+org.jitsi dnssecjava bundle s/.*/debian/ * *

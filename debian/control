@@ -1,0 +1,33 @@
+Source: dnssecjava
+Section: java
+Priority: optional
+Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
+Uploaders: Ingo Bauersachs <ingo@jitsi.org>
+Build-Depends: debhelper (>= 10), default-jdk, maven-debian-helper (>= 2.1)
+Build-Depends-Indep: libmaven-bundle-plugin-java, libdnsjava-java (>= 2.1.6), libslf4j-java, junit4, libjoda-time-java,
+ libpowermock-java, default-jdk-doc, libmaven-javadoc-plugin-java 
+Standards-Version: 3.9.8
+Vcs-Git: https://anonscm.debian.org/git/pkg-java/dnssecjava.git
+Vcs-Browser: https://anonscm.debian.org/cgit/pkg-java/dnssecjava.git
+Homepage: https://github.com/ibauersachs/dnssecjava
+
+Package: libdnssecjava-java
+Architecture: all
+Depends: ${misc:Depends}, ${maven:Depends}
+Suggests: ${maven:OptionalDepends}, libdnssecjava-java-doc
+Description: DNSSEC validating stub resolver for Java
+ dnssecjava is an implementation of a DNSSEC validating stub
+ resolver in Java. It can validate responses to queries with
+ DNSSEC when wrapping one of the existing resolvers of the
+ dnsjava library.
+
+Package: libdnssecjava-java-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends}
+Recommends: ${maven:DocDepends}, ${maven:DocOptionalDepends}
+Suggests: libdnssecjava-java
+Description: Documentation for dnssecjava
+ DNSSEC validating stub resolver for Java
+ .
+ This package contains the API documentation of libdnssecjava-java.
