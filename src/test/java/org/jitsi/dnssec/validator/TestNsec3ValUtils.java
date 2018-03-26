@@ -145,18 +145,18 @@ public class TestNsec3ValUtils extends TestBase {
     public void prepareTestPublicKeyLoadingException() throws Exception {
         whenNew(DNSKEYRecord.class).withNoArguments().thenAnswer(new Answer<DNSKEYRecord>() {
             @Override
-            public DNSKEYRecord answer(InvocationOnMock invocationOnMock) throws Throwable {
+            public DNSKEYRecord answer(InvocationOnMock dnskeyRecordConstruction) throws Throwable {
                 DNSKEYRecord dr = spy(Whitebox.invokeConstructor(DNSKEYRecord.class));
                 doAnswer(new Answer<PublicKey>() {
                     @Override
-                    public PublicKey answer(InvocationOnMock invocation) throws Throwable {
-                        DNSKEYRecord dr = (DNSKEYRecord)invocation.getMock();
+                    public PublicKey answer(InvocationOnMock getPublicKeyInvocation) throws Throwable {
+                        DNSKEYRecord dr = (DNSKEYRecord)getPublicKeyInvocation.getMock();
                         invocationCount++;
                         if (dr.getName().equals(Name.fromConstantString("nsec3.ingotronic.ch.")) && invocationCount == 11) {
                             throw Whitebox.invokeConstructor(DNSSEC.DNSSECException.class, "mock-test");
                         }
 
-                        return (PublicKey)invocation.callRealMethod();
+                        return (PublicKey)getPublicKeyInvocation.callRealMethod();
                     }
                 }).when(dr).getPublicKey();
                 return dr;
