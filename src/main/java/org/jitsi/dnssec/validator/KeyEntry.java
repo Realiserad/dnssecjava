@@ -77,6 +77,11 @@ public final class KeyEntry {
         this.ttl = ttl;
         this.isBad = isBad;
     }
+    
+    public KeyEntry(final KeyEntry keyEntry) {
+        this(keyEntry.name, keyEntry.dclass, keyEntry.ttl, keyEntry.isBad);
+        this.rrset = keyEntry.rrset == null ? null : new SRRset(keyEntry.getRRset());
+    }
 
     /**
      * Creates a new key entry from actual DNSKEYs.

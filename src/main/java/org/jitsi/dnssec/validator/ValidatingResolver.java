@@ -754,29 +754,35 @@ public class ValidatingResolver implements Resolver {
         // Calculate the next lookup name.
         int targetLabels = targetKeyName.labels();
         int currentLabels = currentKeyName.labels();
-        int l = targetLabels - currentLabels - 1;
+        int l = targetLabels - currentLabels;
 
-        // the next key name would be trying to invent a name, so we stop here
-        if (l < 0) {
+        while (--l >= 0) {
+            Name nextKeyName = new Name(targetKeyName, l);
+            logger.trace("findKey: targetKeyName = " + targetKeyName + ", currentKeyName = " + currentKeyName + ", nextKeyName = " + nextKeyName);
+
+            // The next step is either to query for the next DS, or to query for the
+            // next DNSKEY.
+            if (state.dsRRset == null || !state.dsRRset.getName().equals(nextKeyName)) {
+                Message dsRequest = Message.newQuery(Record.newRecord(nextKeyName, Type.DS, qclass));
+                SMessage dsResponse = this.sendRequest(dsRequest);
+                KeyEntry oldKeyEntry = new KeyEntry(state.keyEntry);
+                this.processDSResponse(dsRequest, dsResponse, state);
+                if (state.keyEntry.isGood()) {
+                    return;
+                }
+                // Not a delegation point or missing DS record, try next delegation point
+                if (l > 0) {
+                    state.keyEntry = oldKeyEntry; // restore keys
+                }
+                continue;
+            }
+
+            // Otherwise, it is time to query for the DNSKEY
+            Message dnskeyRequest = Message.newQuery(Record.newRecord(state.dsRRset.getName(), Type.DNSKEY, qclass));
+            SMessage dnskeyResponse = this.sendRequest(dnskeyRequest);
+            this.processDNSKEYResponse(dnskeyRequest, dnskeyResponse, state);
             return;
         }
-
-        Name nextKeyName = new Name(targetKeyName, l);
-        logger.trace("findKey: targetKeyName = " + targetKeyName + ", currentKeyName = " + currentKeyName + ", nextKeyName = " + nextKeyName);
-
-        // The next step is either to query for the next DS, or to query for the
-        // next DNSKEY.
-        if (state.dsRRset == null || !state.dsRRset.getName().equals(nextKeyName)) {
-            Message dsRequest = Message.newQuery(Record.newRecord(nextKeyName, Type.DS, qclass));
-            SMessage dsResponse = this.sendRequest(dsRequest);
-            this.processDSResponse(dsRequest, dsResponse, state);
-            return;
-        }
-
-        // Otherwise, it is time to query for the DNSKEY
-        Message dnskeyRequest = Message.newQuery(Record.newRecord(state.dsRRset.getName(), Type.DNSKEY, qclass));
-        SMessage dnskeyResponse = this.sendRequest(dnskeyRequest);
-        this.processDNSKEYResponse(dnskeyRequest, dnskeyResponse, state);
     }
 
     /**
