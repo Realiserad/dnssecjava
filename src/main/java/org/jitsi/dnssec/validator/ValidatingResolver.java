@@ -719,6 +719,27 @@ public class ValidatingResolver implements Resolver {
     }
 
     /**
+     * Returns true if the dNSName is signed, false is provably not signed (provably insecure),
+     * and null if indeterminate.
+     * @param dNSName the name to check
+     * @return a boolean indicating whether the dNSName is signed, or null
+     */
+    public Boolean isSigned(final Name dnsName) {
+        final FindKeyState state = new FindKeyState();
+        state.signerName = dnsName;
+        state.qclass = DClass.IN;
+        final SRRset trustAnchorRRset = trustAnchors.find(state.signerName, DClass.IN);
+        if (trustAnchorRRset == null) {
+            return null;
+        }
+        state.dsRRset = trustAnchorRRset;
+        state.keyEntry = null;
+        state.currentDSKeyName = new Name(trustAnchorRRset.getName(), 1);
+        processFindKey(state);
+        return state.hasChainOfTrust;
+    }
+    
+    /**
      * Process the FINDKEY state. Generally this just calculates the next name
      * to query and either issues a DS or a DNSKEY query. It will check to see
      * if the correct key has already been reached, in which case it will
@@ -744,6 +765,7 @@ public class ValidatingResolver implements Resolver {
 
         // If our current key entry matches our target, then we are done.
         if (currentKeyName.equals(targetKeyName)) {
+            state.isExhausted = true;
             return;
         }
 
@@ -767,7 +789,7 @@ public class ValidatingResolver implements Resolver {
                 SMessage dsResponse = this.sendRequest(dsRequest);
                 KeyEntry oldKeyEntry = new KeyEntry(state.keyEntry);
                 this.processDSResponse(dsRequest, dsResponse, state);
-                if (state.keyEntry.isGood()) {
+                if (state.keyEntry.isGood() || state.isExhausted) {
                     return;
                 }
                 // Not a delegation point or missing DS record, try next delegation point
@@ -783,6 +805,7 @@ public class ValidatingResolver implements Resolver {
             this.processDNSKEYResponse(dnskeyRequest, dnskeyResponse, state);
             return;
         }
+        state.isExhausted = true;
     }
 
     /**

@@ -79,4 +79,14 @@ class FindKeyState {
      * The initial key name when the key search is started from a trust anchor.
      */
     Name currentDSKeyName;
+    
+    /**
+     * True if we have searched all the way down to signerName in the DNS tree.
+     */
+    boolean isExhausted;
+
+    /**
+     * Set to false if parent can prove no DS. Fail-safe default is true.
+     */
+    boolean hasChainOfTrust = true;
 }
